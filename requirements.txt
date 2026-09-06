@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+transformers
+torch
+torchvision
+accelerate
+pillow
+pydantic
+python-multipart
