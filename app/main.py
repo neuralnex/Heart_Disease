@@ -2,7 +2,7 @@ import torch
 from fastapi import FastAPI, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import Optional
-from transformers import AutoProcessor, AutoModelForMultimodalLM, AutoTokenizer, AutoModelForCausalLM, AutoModel
+from transformers import AutoProcessor, AutoModelForMultimodalLM, AutoTokenizer, AutoModelForCausalLM, AutoModel, BitsAndBytesConfig
 from PIL import Image
 import io
 import uvicorn
@@ -21,12 +21,21 @@ def load_models():
 
     print("Loading models... this may take a while.")
 
+    # Quantization config to fit models in limited GPU VRAM (e.g., HF Spaces)
+    quant_config = BitsAndBytesConfig(
+        load_in_4bit=True,
+        bnb_4bit_compute_dtype=DTYPE,
+        bnb_4bit_quant_type="nf4",
+        bnb_4bit_use_double_quant=True,
+    )
+
     print("Loading GemmaECG-Vision...")
     models['ecg_processor'] = AutoProcessor.from_pretrained("yasserrmd/GemmaECG-Vision")
     models['ecg_model'] = AutoModelForMultimodalLM.from_pretrained(
         "yasserrmd/GemmaECG-Vision",
         device_map="auto",
-        torch_dtype=DTYPE
+        quantization_config=quant_config,
+        low_cpu_mem_usage=True
     )
 
     print("Loading Google TabFM...")
@@ -44,7 +53,8 @@ def load_models():
     models['mistral_model'] = AutoModelForCausalLM.from_pretrained(
         "BioMistral/BioMistral-7B",
         device_map="auto",
-        torch_dtype=DTYPE
+        quantization_config=quant_config,
+        low_cpu_mem_usage=True
     )
     print("All models loaded successfully.")
 

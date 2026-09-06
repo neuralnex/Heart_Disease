@@ -7,3 +7,5 @@ accelerate
 pillow
 pydantic
 python-multipart
+timm
+bitsandbytes
