@@ -6,6 +6,7 @@ from transformers import AutoProcessor, AutoModelForMultimodalLM, AutoTokenizer,
 from PIL import Image
 import io
 import uvicorn
+import json
 
 app = FastAPI(title="Heart Disease Diagnostic Pipeline")
 
@@ -72,9 +73,16 @@ class PatientMetrics(BaseModel):
 
 @app.post("/predict")
 async def predict(
-    metrics: PatientMetrics,
+    metrics: str = Form(...),
     file: UploadFile = File(...)
 ):
+    # Parse metrics from JSON string to Pydantic model
+    try:
+        metrics_data = json.loads(metrics)
+        patient_metrics = PatientMetrics(**metrics_data)
+    except Exception as e:
+        return {"error": f"Invalid metrics format: {str(e)}"}
+
     load_models()
 
     image_data = await file.read()
@@ -128,33 +136,33 @@ OPERATIONAL MANDATES:
     user_content = f"""
 ### 1. PATIENT CLINICAL RECORD
 * Demographics:
-  - Age: {metrics.age}
-  - Sex: {metrics.sex}
-  - Ethnicity: {metrics.ethnicity}
+  - Age: {patient_metrics.age}
+  - Sex: {patient_metrics.sex}
+  - Ethnicity: {patient_metrics.ethnicity}
 
 * Vital Signs & Metabolic Labs:
-  - Blood Pressure: {metrics.blood_pressure} mmHg
-  - Heart Rate: {metrics.heart_rate} bpm
-  - Cholesterol: {metrics.cholesterol} mg/dL
-  - Fasting Blood Sugar: {metrics.fasting_blood_sugar} mg/dL
-  - Diabetes Status: {metrics.diabetes}
-  - BMI: {metrics.bmi} kg/m²
+  - Blood Pressure: {patient_metrics.blood_pressure} mmHg
+  - Heart Rate: {patient_metrics.heart_rate} bpm
+  - Cholesterol: {patient_metrics.cholesterol} mg/dL
+  - Fasting Blood Sugar: {patient_metrics.fasting_blood_sugar} mg/dL
+  - Diabetes Status: {patient_metrics.diabetes}
+  - BMI: {patient_metrics.bmi} kg/m²
 
 * Cardiac-Specific Diagnostic Metrics:
-  - Resting ECG Result: {metrics.resting_ecg}
-  - ST Depression (Oldpeak): {metrics.oldpeak}
-  - Slope of Peak Exercise ST Segment: {metrics.slope}
-  - Number of Major Vessels (Fluoroscopy): {metrics.major_vessels}
-  - Thalassemia: {metrics.thalassemia}
+  - Resting ECG Result: {patient_metrics.resting_ecg}
+  - ST Depression (Oldpeak): {patient_metrics.oldpeak}
+  - Slope of Peak Exercise ST Segment: {patient_metrics.slope}
+  - Number of Major Vessels (Fluoroscopy): {patient_metrics.major_vessels}
+  - Thalassemia: {patient_metrics.thalassemia}
 
 * Lifestyle & Behavioral Metrics:
-  - Smoking Status: {metrics.smoking}
-  - Alcohol Consumption: {metrics.alcohol_consumption}
-  - Physical Activity Level: {metrics.physical_activity}
-  - Sleep Duration: {metrics.sleep_duration} hours/day
-  - Diet Quality: {metrics.diet_quality}
-  - Stress Level: {metrics.stress_level}
-  - Sedentary Lifestyle: {metrics.sedentary_lifestyle}
+  - Smoking Status: {patient_metrics.smoking}
+  - Alcohol Consumption: {patient_metrics.alcohol_consumption}
+  - Physical Activity Level: {patient_metrics.physical_activity}
+  - Sleep Duration: {patient_metrics.sleep_duration} hours/day
+  - Diet Quality: {patient_metrics.diet_quality}
+  - Stress Level: {patient_metrics.stress_level}
+  - Sedentary Lifestyle: {patient_metrics.sedentary_lifestyle}
 
 * Derived / Engineered Features (Calculated):
   - BMI-BP Interaction: {bmi_bp_interaction}
