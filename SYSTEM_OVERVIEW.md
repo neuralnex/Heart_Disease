@@ -46,8 +46,35 @@ The system outputs a report divided into two sections:
 **Content-Type**: `multipart/form-data`
 
 #### Request Parameters
-1.  **`file` (File)**: An image file of the 12-lead ECG.
-2.  **`metrics` (JSON)**: A set of 21 patient parameters.
+1.  **`file` (File)**: An image file of the 12-lead ECG (supported formats: JPG, PNG).
+2.  **`metrics` (String/JSON)**: A JSON-encoded string containing the patient parameters.
+
+**Example `metrics` JSON payload:**
+```json
+{
+  "age": 58,
+  "sex": "Male",
+  "ethnicity": "Caucasian",
+  "blood_pressure": "140/90",
+  "heart_rate": 75,
+  "cholesterol": 240,
+  "fasting_blood_sugar": 110,
+  "diabetes": "Yes",
+  "bmi": 28.5,
+  "resting_ecg": "Normal",
+  "oldpeak": 1.5,
+  "slope": "Flat",
+  "major_vessels": 2,
+  "thalassemia": "Fixed",
+  "smoking": "Former",
+  "alcohol_consumption": "Moderate",
+  "physical_activity": "Low",
+  "sleep_duration": 6.5,
+  "diet_quality": "Poor",
+  "stress_level": "High",
+  "sedentary_lifestyle": "Yes"
+}
+```
 
 | Category | Parameter | Type | Example Value | Description |
 | :--- | :--- | :--- | :--- | :--- |
@@ -92,6 +119,7 @@ The system outputs a report divided into two sections:
 ---
 
 ## 5. Technical Optimizations
-*   **Lazy Loading**: To reduce startup time and memory overhead, models are not loaded when the server starts. Instead, they are loaded into memory only upon the first request to the `/predict` endpoint.
+*   **Build-Time Model Preloading**: To minimize startup latency, all necessary model weights are downloaded during the Docker build process. This ensures the container is self-contained and ready for immediate deployment.
+*   **Eager Loading**: Models are loaded into memory during the server startup phase (`@app.on_event("startup")`), ensuring that the first API request is processed with minimal delay.
 *   **Memory Efficiency**: Models are loaded using `torch.float16` (half-precision) and `device_map="auto"` to optimize GPU/CPU utilization.
 *   **Containerization**: The system is fully Dockerized for consistent deployment across GitHub (for code/CI) and Hugging Face Spaces (for hosting).
