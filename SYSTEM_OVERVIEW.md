@@ -47,7 +47,7 @@ The system outputs a report divided into two sections:
 
 #### Request Parameters
 1.  **`file` (File)**: An image file of the 12-lead ECG.
-2.  **`metrics` (JSON)**: A set of 23 patient parameters.
+2.  **`metrics` (JSON)**: A set of 21 patient parameters.
 
 | Category | Parameter | Type | Example Value | Description |
 | :--- | :--- | :--- | :--- | :--- |
@@ -72,8 +72,6 @@ The system outputs a report divided into two sections:
 | | `diet_quality` | str | `"Poor"` | Quality of dietary habits |
 | | `stress_level` | str | `"High"` | Self-reported stress level |
 | | `sedentary_lifestyle` | str | `"Yes"` | Whether the patient is primarily sedentary |
-| **Engineered** | `bmi_bp_interaction` | float | `1.24` | Interaction score between BMI and BP |
-| | `health_risk_score` | float | `0.78` | Calculated aggregate health risk index |
 
 #### Response Format
 ```json
@@ -82,7 +80,11 @@ The system outputs a report divided into two sections:
   "upstream_findings": {
     "gemma_ecg": "Visual findings from the ECG model...",
     "tabfm_risk": 75.5,
-    "tabfm_label": "High Risk"
+    "tabfm_label": "High Risk",
+    "engineered_metrics": {
+      "bmi_bp_interaction": 1.24,
+      "health_risk_score": 0.78
+    }
   }
 }
 ```

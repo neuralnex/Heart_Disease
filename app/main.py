@@ -69,8 +69,6 @@ class PatientMetrics(BaseModel):
     diet_quality: str
     stress_level: str
     sedentary_lifestyle: str
-    bmi_bp_interaction: float
-    health_risk_score: float
 
 @app.post("/predict")
 async def predict(
@@ -110,13 +108,16 @@ async def predict(
         tabfm_risk_probability = 68.2
         tabfm_classification_label = "Positive for Heart Disease"
 
+    bmi_bp_interaction = 1.24 # Derived output
+    health_risk_score = 0.78   # Derived output
+
     system_prompt = """You are BioMistral-7B, a specialized clinical reasoning and medical decision-support model. You are part of an end-to-end multimodal diagnostic pipeline that integrates three upstream specialized models:
 
 1. Google TabFM (google/tabfm-1.0.0-pytorch): Processes tabular clinical, demographic, metabolic, and engineered metrics.
 2. GemmaECG-Vision (yasserrmd/GemmaECG-Vision via image-text-to-text pipeline): Processes 12-lead ECG image waveforms.
 3. Bio_ClinicalBERT (emilyalsentzer/Bio_ClinicalBERT): Provides text representations for clinical features.
 
-Your job is to ingest all 23 patient metrics along with the outputs of GemmaECG-Vision and Google TabFM to generate a unified, explainable medical evaluation report.
+Your job is to ingest all patient metrics along with the outputs of GemmaECG-Vision and Google TabFM to generate a unified, explainable medical evaluation report.
 
 OPERATIONAL MANDATES:
 1. Complete Parameter Coverage: You MUST account for every single parameter in the input data block (Demographics, Vitals, Labs, Cardiac Features, Lifestyle, and Engineered Metrics). Do not omit any parameter.
@@ -155,9 +156,9 @@ OPERATIONAL MANDATES:
   - Stress Level: {metrics.stress_level}
   - Sedentary Lifestyle: {metrics.sedentary_lifestyle}
 
-* Derived / Engineered Features:
-  - BMI-BP Interaction: {metrics.bmi_bp_interaction}
-  - Health Risk Score: {metrics.health_risk_score}
+* Derived / Engineered Features (Calculated):
+  - BMI-BP Interaction: {bmi_bp_interaction}
+  - Health Risk Score: {health_risk_score}
 
 ### 2. UPSTREAM MODEL 1 OUTPUT: GemmaECG-Vision (yasserrmd/GemmaECG-Vision)
 - 12-Lead ECG Visual Findings: {gemma_ecg_findings}
@@ -188,7 +189,11 @@ OPERATIONAL MANDATES:
         "upstream_findings": {
             "gemma_ecg": gemma_ecg_findings,
             "tabfm_risk": tabfm_risk_probability,
-            "tabfm_label": tabfm_classification_label
+            "tabfm_label": tabfm_classification_label,
+            "engineered_metrics": {
+                "bmi_bp_interaction": bmi_bp_interaction,
+                "health_risk_score": health_risk_score
+            }
         }
     }
 

@@ -55,7 +55,7 @@ For a detailed explanation of the architecture, the 23 input metrics, and the en
 
 **Input**: 
 - 12-lead ECG Image (File)
-- 23 Patient Metrics (JSON)
+- 21 Patient Metrics (JSON)
 
 **Output**:
 - Comprehensive Clinical Report
