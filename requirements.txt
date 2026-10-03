@@ -9,3 +9,7 @@ pydantic
 python-multipart
 timm
 bitsandbytes
+openai
+pandas
+numpy
+python-dotenv
